@@ -7,27 +7,29 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-STATE_FILE = "state.json"
-
 URL = "https://www.mudk.cz/cs/radnice/uzemni-planovani/"
 
 KEYWORDS = [
     "územní plán",
-    "změna územního plánu",
+    "změna",
     "veřejné projednání",
     "opatření obecné povahy",
 ]
 
+STATE_FILE = "known_items.json"
+
+
 def load_state():
     if Path(STATE_FILE).exists():
-        return set(json.loads(Path(STATE_FILE).read_text(encoding="utf-8")))
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            return set(json.load(f))
     return set()
 
-def save_state(items):
-    Path(STATE_FILE).write_text(
-        json.dumps(list(items), ensure_ascii=False, indent=2),
-        encoding="utf-8"
-    )
+
+def save_state(data):
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(sorted(list(data)), f, ensure_ascii=False, indent=2)
+
 
 def send_email(subject, body):
     msg = MIMEText(body, "plain", "utf-8")
@@ -42,15 +44,15 @@ def send_email(subject, body):
         )
         smtp.send_message(msg)
 
+
 response = requests.get(URL, timeout=30)
 response.raise_for_status()
 
 soup = BeautifulSoup(response.text, "html.parser")
 
-known = load_state()
-current = set()
-
 text = soup.get_text("\n")
+
+found = set()
 
 for line in text.splitlines():
     line = line.strip()
@@ -58,24 +60,30 @@ for line in text.splitlines():
     if not line:
         continue
 
-    if any(keyword.lower() in line.lower() for keyword in KEYWORDS):
-        current.add(line)
+    if any(k.lower() in line.lower() for k in KEYWORDS):
+        found.add(line)
 
-new_items = current - known
+
+known = load_state()
+
+new_items = found - known
 
 if new_items:
     body = (
-        "Byla nalezena nová zmínka o územním plánování.\n\n"
-        + "\n\n".join(sorted(new_items))
-        + f"\n\nZdroj:\n{URL}"
+        "Byly nalezeny nové položky týkající se územního plánování:\n\n"
+        + "\n".join(sorted(new_items))
+        + "\n\nZdroj:\n"
+        + URL
     )
 
     send_email(
-        "Dvůr Králové - změna územního plánu",
+        "Dvůr Králové - nové územní plánování",
         body
     )
 
-save_state(current)
+known.update(found)
 
-print(f"Nalezeno {len(current)} položek")
-print(f"Nových {len(new_items)} položek")
+save_state(known)
+
+print(f"Nalezeno: {len(found)}")
+print(f"Nových: {len(new_items)}")
