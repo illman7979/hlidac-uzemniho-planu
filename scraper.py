@@ -12,7 +12,7 @@ Další krok bude napojení na úřední desku Dvora Králové.
 msg = MIMEText(body, "plain", "utf-8")
 msg["Subject"] = subject
 msg["From"] = os.environ["EMAIL_USER"]
-msg["To"] = "michal.havle@centrum.cz"
+msg["To"] = os.environ["EMAIL_TO"]
 
 with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
     smtp.login(
