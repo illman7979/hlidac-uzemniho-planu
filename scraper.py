@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-subject = "Test hlídače územního plánu - nove"
+subject = "Test hlídače územního plánu - nove 2"
 body = """
 Pokud čtete tento e-mail, GitHub Actions fungují správně.
 
