@@ -2,7 +2,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
-subject = "AAAAAAAAAAAA TEST"
+subject = "Hlídač územního plánu"
 body = """
 Pokud čtete tento e-mail, GitHub Actions fungují správně.
 
@@ -22,4 +22,3 @@ with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
     smtp.send_message(msg)
 
 print("Testovací email odeslán")
-print("NOVA_VERZE_SKRIPTU")
