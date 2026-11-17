@@ -56,6 +56,9 @@ known = load_state()
 response = requests.get(UD_URL, timeout=30)
 response.raise_for_status()
 
+# Web vrací text v UTF-8, ale requests může zvolit chybné kódování.
+response.encoding = "utf-8"
+
 soup = BeautifulSoup(response.text, "html.parser")
 
 found_ids = set()
