@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import smtplib
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -7,16 +8,20 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-URL = "https://www.mudk.cz/cs/radnice/uzemni-planovani/"
+BASE_URL = "https://www.mudk.cz"
+UD_URL = "https://www.mudk.cz/redakce/index.php?clanek=122590&xuser=124174245768101576&lanG=cs&slozka=122262&xsekce=122589"
+
+STATE_FILE = "known_items.json"
 
 KEYWORDS = [
     "územní plán",
-    "změna",
+    "změna územního plánu",
     "veřejné projednání",
+    "veřejná vyhláška",
     "opatření obecné povahy",
+    "zpráva o uplatňování",
+    "územně plánovací",
 ]
-
-STATE_FILE = "known_items.json"
 
 
 def load_state():
@@ -45,45 +50,72 @@ def send_email(subject, body):
         smtp.send_message(msg)
 
 
-response = requests.get(URL, timeout=30)
+known = load_state()
+
+response = requests.get(UD_URL, timeout=30)
 response.raise_for_status()
 
 soup = BeautifulSoup(response.text, "html.parser")
 
-text = soup.get_text("\n")
+found_ids = set()
+matches = []
 
-found = set()
+for link in soup.find_all("a", href=True):
 
-for line in text.splitlines():
-    line = line.strip()
+    href = link["href"]
 
-    if not line:
+    if "detail_claim=" not in href:
         continue
 
-    if any(k.lower() in line.lower() for k in KEYWORDS):
-        found.add(line)
+    m = re.search(r"detail_claim=(\d+)", href)
+    if not m:
+        continue
 
+    claim_id = m.group(1)
 
-known = load_state()
+    title = link.get_text(" ", strip=True)
 
-new_items = found - known
+    full_url = href
+    if href.startswith("/"):
+        full_url = BASE_URL + href
+    elif not href.startswith("http"):
+        full_url = BASE_URL + "/" + href.lstrip("/")
 
-if new_items:
+    found_ids.add(claim_id)
+
+    text_for_check = title.lower()
+
+    if any(k.lower() in text_for_check for k in KEYWORDS):
+        if claim_id not in known:
+            matches.append(
+                {
+                    "id": claim_id,
+                    "title": title,
+                    "url": full_url,
+                }
+            )
+
+if matches:
+
+    body_lines = []
+
+    for item in matches:
+        body_lines.append(
+            f"{item['title']}\n{item['url']}\nID: {item['id']}"
+        )
+
     body = (
-        "Byly nalezeny nové položky týkající se územního plánování:\n\n"
-        + "\n".join(sorted(new_items))
-        + "\n\nZdroj:\n"
-        + URL
+        "Byla nalezena nová položka na úřední desce.\n\n"
+        + "\n\n".join(body_lines)
     )
 
     send_email(
-        "Dvůr Králové - nové územní plánování",
+        "Dvůr Králové - nové oznámení ÚP",
         body
     )
 
-known.update(found)
-
+known.update(found_ids)
 save_state(known)
 
-print(f"Nalezeno: {len(found)}")
-print(f"Nových: {len(new_items)}")
+print(f"Nalezeno oznámení: {len(found_ids)}")
+print(f"Nové relevantní položky: {len(matches)}")
