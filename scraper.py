@@ -115,6 +115,10 @@ if matches:
         body
     )
 
+for link in soup.find_all("a", href=True):
+    if "detail_claim=" in link["href"]:
+        print("POLOZKA:", link.get_text(" ", strip=True))
+
 known.update(found_ids)
 save_state(known)
 
