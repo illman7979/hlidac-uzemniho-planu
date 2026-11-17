@@ -21,6 +21,7 @@ KEYWORDS = [
     "opatření obecné povahy",
     "zpráva o uplatňování",
     "územně plánovací",
+    "Zveřejnění schváleného",
 ]
 
 
