@@ -350,6 +350,29 @@ def send_email(matches):
         )
         smtp.send_message(message)
 
+def send_status_email(board_items, known_ids, new_ids):
+    body = (
+        "Pravidelná kontrola proběhla úspěšně.\n\n"
+        f"Datum a čas: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n"
+        f"Počet položek na desce: {len(board_items)}\n"
+        f"Známých položek: {len(known_ids)}\n"
+        f"Nových položek ke kontrole: {len(new_ids)}\n\n"
+        "Výsledek: nebyly nalezeny žádné nové relevantní dokumenty.\n\n"
+        "Hlídač územního plánu běží správně."
+    )
+
+    message = MIMEText(body, "plain", "utf-8")
+    message["Subject"] = "Dvůr Králové: kontrola OK"
+    message["From"] = os.environ["EMAIL_USER"]
+    message["To"] = os.environ["EMAIL_TO"]
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(
+            os.environ["EMAIL_USER"],
+            os.environ["EMAIL_PASSWORD"],
+        )
+        smtp.send_message(message)
+
 
 def main():
     known_ids = load_state()
@@ -391,7 +414,8 @@ def main():
         send_email(relevant_items)
         print(f"Odeslano relevantnich polozek: {len(relevant_items)}")
     else:
-        print("Zadna nova relevantni polozka.")
+        send_status_email()
+        print("Odeslan stavovy email.")
 
     # Uložíme pouze položky, jejichž zpracování proběhlo úspěšně.
     known_ids.update(successfully_processed_ids)
