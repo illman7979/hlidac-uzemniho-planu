@@ -3,10 +3,9 @@ name: Hlidac uzemniho planu
 on:
   workflow_dispatch:
 
-  schedule:
-    - cron: '0 6 * * *'  
-    - cron: '0 12 * * *'
-    - cron: '0 18 * * *'
+schedule:
+  - cron: '*/5 * * * *'
+  
 
 permissions:
   contents: write
