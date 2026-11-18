@@ -3,7 +3,7 @@ name: Hlidac uzemniho planu
 on:
   workflow_dispatch:
 
-schedule:
+  schedule:
   - cron: '*/5 * * * *'
   
 
