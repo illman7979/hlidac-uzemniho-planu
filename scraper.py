@@ -348,7 +348,7 @@ def send_email(matches):
             os.environ["EMAIL_USER"],
             os.environ["EMAIL_PASSWORD"],
         )
-        smtp.send_message(message)
+        
 
 def send_status_email(board_items, known_ids, new_ids):
     body = (
@@ -364,6 +364,9 @@ def send_status_email(board_items, known_ids, new_ids):
     message = MIMEText(body, "plain", "utf-8")
     message["Subject"] = "Dvůr Králové: kontrola OK"
     message["From"] = os.environ["EMAIL_USER"]
+
+    print("Posilam na:", os.environ["EMAIL_TO"])
+    
     message["To"] = os.environ["EMAIL_TO"]
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
@@ -372,6 +375,7 @@ def send_status_email(board_items, known_ids, new_ids):
             os.environ["EMAIL_PASSWORD"],
         )
         smtp.send_message(message)
+        print("SMTP: stavovy email skutecne odeslan")
 
 
 def main():
