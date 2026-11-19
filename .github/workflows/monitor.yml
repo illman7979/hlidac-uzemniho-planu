@@ -1,5 +1,9 @@
 name: Hlidac uzemniho planu
 
+concurrency:
+  group: uzemni-plan-monitor
+  cancel-in-progress: false
+
 on:
   workflow_dispatch:
 
