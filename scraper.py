@@ -349,7 +349,8 @@ def send_email(matches):
             os.environ["EMAIL_USER"],
             os.environ["EMAIL_PASSWORD"],
         )
-        
+        smtp.send_message(message)
+        print("SMTP: email s nalezenymi polozkami skutecne odeslan")
 
 def send_status_email(board_items, known_ids, new_ids):
     body = (
@@ -396,7 +397,7 @@ def main():
     relevant_items = []
     successfully_processed_ids = set()
 
-    for claim_id in sorted(new_ids, key=int):
+    for claim_id in sorted(new_ids, key=int, reverse=True):
         item = board_items[claim_id]
 
         try:
