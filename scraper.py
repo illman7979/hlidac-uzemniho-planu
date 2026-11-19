@@ -396,7 +396,7 @@ def main():
     relevant_items = []
     successfully_processed_ids = set()
 
-    for claim_id in sorted(new_ids, key=int, reverse=True):
+    for claim_id in sorted(new_ids, key=int):
         item = board_items[claim_id]
 
         try:
