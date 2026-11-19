@@ -414,7 +414,7 @@ def main():
         send_email(relevant_items)
         print(f"Odeslano relevantnich polozek: {len(relevant_items)}")
     else:
-        send_status_email()
+        send_status_email(board_items,known_ids,new_ids)
         print("Odeslan stavovy email.")
 
     # Uložíme pouze položky, jejichž zpracování proběhlo úspěšně.
