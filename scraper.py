@@ -339,6 +339,7 @@ def send_email(matches):
     message = MIMEText(body, "plain", "utf-8")
     message["Subject"] = (
         f"Dvůr Králové: nové oznámení ÚP ({len(matches)})"
+        f"{datetime.now().strftime('%d.%m.%Y %H:%M')}"
     )
     message["From"] = os.environ["EMAIL_USER"]
     message["To"] = os.environ["EMAIL_TO"]
@@ -362,7 +363,10 @@ def send_status_email(board_items, known_ids, new_ids):
     )
 
     message = MIMEText(body, "plain", "utf-8")
-    message["Subject"] = "Dvůr Králové: kontrola OK"
+    message["Subject"] = (
+        f"Dvůr Králové: kontrola OK "
+        f"{datetime.now().strftime('%d.%m.%Y %H:%M')}"
+    )
     message["From"] = os.environ["EMAIL_USER"]
 
     print("Posilam na:", os.environ["EMAIL_TO"])
