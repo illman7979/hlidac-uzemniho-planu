@@ -233,7 +233,23 @@ def inspect_item(item):
     for element in soup(["script", "style", "noscript"]):
         element.decompose()
 
-    detail_text = soup.get_text("\n", strip=True)
+    title_area = soup.find(
+        "h3",
+        class_="oznameni_nazev"
+    )
+    
+    detail_area = soup.find(
+        "div",
+        class_="oznameni_detail"
+    )
+    
+    detail_text = ""
+    
+    if title_area:
+        detail_text += title_area.get_text(" ", strip=True)
+    
+    if detail_area:
+        detail_text += "\n" + detail_area.get_text("\n", strip=True)
 
     searchable_parts = [
         item["title"],
@@ -283,6 +299,7 @@ def inspect_item(item):
     # Nejdřív kontrola názvu, detailu a názvů příloh.
     combined_text = "\n".join(searchable_parts)
     matched_keywords = set(find_keywords(combined_text))
+    print("  Nalezena slova:", matched_keywords)
 
     # Pokud zatím nic nenajdeme, prohledáme také text PDF.
     # Díky tomu nestahujeme PDF zbytečně, když je shoda už v názvu.
