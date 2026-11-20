@@ -57,7 +57,6 @@ KEYWORDS = [
     "veřejné projednání návrhu změny",
     "opakované veřejné projednání",
     "vyhodnocení vlivů na udržitelný rozvoj území",
-    "Zveřejnění schváleného",
 ]
 
 session = requests.Session()
