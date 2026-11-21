@@ -383,7 +383,8 @@ def send_email(items):
             f"{len(items)} nových oznámení "
             f"{datetime.now().strftime('%d.%m.%Y %H:%M')}"
         )
-
+        
+    message["Subject"] = subject
     message["From"] = os.environ["EMAIL_USER"]
     message["To"] = os.environ["EMAIL_TO"]
 
