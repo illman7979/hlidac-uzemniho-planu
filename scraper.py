@@ -57,7 +57,7 @@ KEYWORDS = [
     "veřejné projednání návrhu změny",
     "opakované veřejné projednání",
     "vyhodnocení vlivů na udržitelný rozvoj území",
-    "dopravní přestupek"
+    "dopravní přestupek",
     "Vyhlášení nálezu",
 ]
 
@@ -322,43 +322,62 @@ def inspect_item(item):
     }
 
 
-def send_email(matches):
+def send_email(items):
     sections = []
 
-    for item in matches:
+    for item in items:
+
+        if item["keywords"]:
+            marker = "🔴 DULEZITE"
+        else:
+            marker = "🟢 Bez klicovych slov"
+
         section = [
+            marker,
             item["title"],
             f"Odkaz: {item['url']}",
             f"ID oznámení: {item['id']}",
-            "Nalezené výrazy: " + ", ".join(item["keywords"]),
         ]
+
+        if item["keywords"]:
+            section.append(
+                "Nalezené výrazy: "
+                + ", ".join(item["keywords"])
+            )
 
         if item["attachments"]:
             section.append("Přílohy:")
 
             for attachment in item["attachments"]:
                 section.append(
-                    f"- {attachment['name']}: {attachment['url']}"
+                    f"- {attachment['name']}: "
+                    f"{attachment['url']}"
                 )
 
         sections.append("\n".join(section))
 
     body = (
-        "Na úřední desce města Dvůr Králové nad Labem "
-        "bylo nalezeno nové oznámení související "
-        "s územním plánováním.\n\n"
-        + "\n\n"
+        f"Na úřední desce bylo nalezeno "
+        f"{len(items)} nových oznámení.\n\n"
         + ("\n\n" + ("-" * 60) + "\n\n").join(sections)
-        + "\n\n"
-        + "Hlavní úřední deska:\n"
+        + "\n\nHlavní úřední deska:\n"
         + BOARD_URL
     )
 
+    important_count = sum(
+        1 for item in items
+        if item["keywords"]
+    )
+
     message = MIMEText(body, "plain", "utf-8")
+
     message["Subject"] = (
-        f"Dvůr Králové: nové oznámení ÚP ({len(matches)})"
+        f"Dvůr Králové: "
+        f"{len(items)} nových oznámení, "
+        f"{important_count} důležitých "
         f"{datetime.now().strftime('%d.%m.%Y %H:%M')}"
     )
+
     message["From"] = os.environ["EMAIL_USER"]
     message["To"] = os.environ["EMAIL_TO"]
 
@@ -368,7 +387,8 @@ def send_email(matches):
             os.environ["EMAIL_PASSWORD"],
         )
         smtp.send_message(message)
-        print("SMTP: email s nalezenymi polozkami skutecne odeslan")
+
+    print("SMTP: email skutecne odeslan")
 
 def send_status_email(board_items, known_ids, new_ids):
     body = (
@@ -412,7 +432,7 @@ def main():
     print(f"Jiz znamych ID: {len(known_ids)}")
     print(f"Novych ID ke kontrole: {len(new_ids)}")
 
-    relevant_items = []
+    new_items = []
     successfully_processed_ids = set()
 
     for claim_id in sorted(new_ids, key=int, reverse=True):
@@ -422,8 +442,8 @@ def main():
             inspected_item = inspect_item(item)
             successfully_processed_ids.add(claim_id)
 
+            new_items.append(inspected_item)
             if inspected_item["keywords"]:
-                relevant_items.append(inspected_item)
                 print(
                     "  RELEVANTNI: "
                     + ", ".join(inspected_item["keywords"])
@@ -437,11 +457,19 @@ def main():
                 f"CHYBA pri kontrole ID {claim_id}: {error}"
             )
 
-    if relevant_items:
-        send_email(relevant_items)
-        print(f"Odeslano relevantnich polozek: {len(relevant_items)}")
+    if new_items:
+        send_email(new_items)
+        print(
+            f"Odeslano novych polozek: "
+            f"{len(new_items)}"
+        )
     else:
-        send_status_email(board_items,known_ids,new_ids)
+        send_status_email(
+            board_items,
+            known_ids,
+            new_ids
+        )
+        print("Odeslan stavovy email.")
         print("Odeslan stavovy email.")
 
     # Uložíme pouze položky, jejichž zpracování proběhlo úspěšně.
