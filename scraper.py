@@ -328,7 +328,7 @@ def send_email(items):
     for item in items:
 
         if item["keywords"]:
-            marker = "🔴 DULEZITE"
+            marker = "🔴🔴🔴 DŮLEŽITÉ - nalezena klíčová slova"
         else:
             marker = "🟢 Bez klicovych slov"
 
@@ -371,12 +371,18 @@ def send_email(items):
 
     message = MIMEText(body, "plain", "utf-8")
 
-    message["Subject"] = (
-        f"Dvůr Králové: "
-        f"{len(items)} nových oznámení, "
-        f"{important_count} důležitých "
-        f"{datetime.now().strftime('%d.%m.%Y %H:%M')}"
-    )
+    if important_count > 0:
+        subject = (
+            f"🔴 DVŮR KRÁLOVÉ: "
+            f"{important_count} důležitých z {len(items)} nových "
+            f"{datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+    else:
+        subject = (
+            f"Dvůr Králové: "
+            f"{len(items)} nových oznámení "
+            f"{datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
 
     message["From"] = os.environ["EMAIL_USER"]
     message["To"] = os.environ["EMAIL_TO"]
@@ -397,7 +403,7 @@ def send_status_email(board_items, known_ids, new_ids):
         f"Počet položek na desce: {len(board_items)}\n"
         f"Známých položek: {len(known_ids)}\n"
         f"Nových položek ke kontrole: {len(new_ids)}\n\n"
-        "Výsledek: nebyly nalezeny žádné nové relevantní dokumenty.\n\n"
+        "Výsledek: nebyla nalezena žádná nová oznámení.\n\n"
         "Hlídač územního plánu běží správně."
     )
 
@@ -469,7 +475,6 @@ def main():
             known_ids,
             new_ids
         )
-        print("Odeslan stavovy email.")
         print("Odeslan stavovy email.")
 
     # Uložíme pouze položky, jejichž zpracování proběhlo úspěšně.
