@@ -53,6 +53,10 @@ jobs:
 
           git add known_items.json
 
-          git diff --cached --quiet || git commit -m "Update state"
+          if ! git diff --cached --quiet; then
+            git commit -m "Update state"
+            git pull --rebase origin main
+            git push
+          fi
 
           git push
