@@ -8,18 +8,7 @@ on:
   workflow_dispatch:
 
   schedule:
-  - cron: '17 6 * * *'
-  - cron: '17 8 * * *'
-  - cron: '17 10 * * *'
-  - cron: '17 12 * * *'
-  - cron: '17 14 * * *'
   - cron: '17 16 * * *'
-  - cron: '17 18 * * *'
-  - cron: '17 20 * * *'
-  - cron: '17 22 * * *'
-  - cron: '17 0 * * *'
-  - cron: '17 2 * * *'
-  - cron: '17 4 * * *'
 
 permissions:
   contents: write
